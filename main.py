@@ -1,41 +1,15 @@
-from imap_tools import MailBox, AND
-from datetime import datetime, timedelta, time
+from auth import get_mailbox
+from fetcher import fetch_email
 
-start = datetime.combine(datetime(2025, 6, 17), time.min)  # 2025-06-17 00:00:00
-end = datetime.combine(datetime(2025, 6, 18), time.min)
+from dotenv import load_dotenv
+import os
 
-mail_password = "frra xzja ablq cehs"
-mail_username = "jaspermusters@gmail.com"
-mail_server = "imap.gmail.com"
+load_dotenv()  # Laadt alle variabelen uit .env
 
-def get_mailbox(username,password,server,inbox="INBOX"):
-    mailbox = MailBox(server)
-    mailbox.login(username,passowrd,inbox)
-    return mailbox
+mail_username = os.getenv("MAIL_USERNAME")
+mail_password = os.getenv("MAIL_PASSWORD")
+mail_server = os.getenv("MAIL_SERVER")
 
 
-with MailBox(mail_server).login(mail_username, mail_password, "INBOX") as mb:
-    criteria = AND(date_gte=start.date(), date_lt=end.date(), gmail_label=[])
-    retrieved_mail = []
-    for msg in mb.fetch(criteria, reverse=True):
-        mail_data = {
-            "uid": msg.uid,
-            "subject": msg.subject,
-            "from_": msg.from_,
-            "to": msg.to,
-            "cc": msg.cc,
-            "date": msg.date,
-            "body_plain": msg.text,
-            "body_html": msg.html,
-            "size": msg.size,
-            "flags": msg.flags,
-            "is_read": '\\Seen' in msg.flags,
-            "attachments": msg.attachments,
-            "thread_id": None,
-            "raw": None
-        }
+mailbox = get_mailbox(mail_username, mail_password, mail_server)
 
-        retrieved_mail.append(mail_data)
-
-
-print(retrieved_mail)
